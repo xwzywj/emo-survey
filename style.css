@@ -81,6 +81,16 @@ button:hover { background-color: #2ea043; }
 
 #result h3 { color: #f85149; margin-bottom: 15px; }
 #result-text { font-size: 16px; line-height: 1.6; color: #c9d1d9; }
+/* 结果弹出时的屏幕闪烁效果 */
+.flash-red {
+    animation: screenFlash 0.3s ease-out;
+}
+
+@keyframes screenFlash {
+    0% { background-color: #f85149; }
+    100% { background-color: #0d1117; }
+}
+
 .retry { color: #8b949e; margin-top: 30px; cursor: pointer; text-decoration: underline; font-size: 12px; }
 
 @keyframes fadeIn {
