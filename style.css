@@ -107,3 +107,19 @@ button:hover { background-color: #2ea043; }
     50% { background-color: #aa1e1e; }
     100% { background-color: #0d1117; } /* 回到深蓝色背景 */
 }
+/* 优化结尾比心图的样式 */
+#heart-image-container img {
+    display: block; /* 居中必备 */
+    margin: 40px auto; /* 上下外边距40px，左右自动居中 */
+    max-width: 150px; /* 限制最大宽度，别太大 */
+    height: auto;
+    border-radius: 50%; /* 让黄色小人变成圆形的，更像个头像 */
+    box-shadow: 0 0 20px rgba(88, 166, 255, 0.5); /* 增加蓝色光晕，更有赛博感 */
+    animation: imageFadeIn 1s ease-out; /* 增加一个淡入动画 */
+}
+
+@keyframes imageFadeIn {
+    from { opacity: 0; transform: scale(0.8); }
+    to { opacity: 1; transform: scale(1); }
+}
+
