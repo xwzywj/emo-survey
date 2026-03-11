@@ -199,8 +199,21 @@
             document.getElementById('progress').style.width = (answered / state.currentList.length) * 100 + '%';
         }
 
-        function processSubmit() {
+                function processSubmit() {
             if (Object.keys(state.answers).length < state.currentList.length) return alert("请完成所有题目");
+            
+            // --- 核心修复：在这里触发音效 ---
+            const audio = document.getElementById('emo-audio');
+            if (audio) {
+                audio.currentTime = 0; // 重置进度，防止连点没声音
+                audio.play().catch(e => console.log("音频播放被拦截:", e));
+            }
+            
+            // 触发闪红特效（需要 CSS 配合）
+            document.body.classList.add('flash-red');
+            setTimeout(() => document.body.classList.remove('flash-red'), 500);
+            // ------------------------------
+
             const duration = ((Date.now() - state.startTime) / 1000).toFixed(1);
             localStorage.setItem('last_time', duration + "s");
 
@@ -220,6 +233,7 @@
                 const res = c.C>=10?"绝对虚无":(c.B>=c.A?"系统延迟":"生存本能");
                 localStorage.setItem('emo_res', res);
             }
+            
             if (state.user.toLowerCase() === "pluviophile") alert("I死了");
             showProfile();
         }
