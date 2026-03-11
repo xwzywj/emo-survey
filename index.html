@@ -6,8 +6,9 @@
     <title>虚无主义大学生状态检查</title>
     <link rel="stylesheet" href="style.css">
 </head>
-<audio id="emo-audio" src="ding.mp3" preload="auto"></audio>
- <body>
+<body id="main-body">
+    <audio id="emo-audio" src="https://actions.google.com/sounds/v1/alarms/beep_short.ogg" preload="auto"></audio>
+
     <div class="container">
         <header>
             <h1>Commit Your Soul</h1>
@@ -21,7 +22,7 @@
             <div class="question-group">
                 <label>1. 今天的起床动力来源是？</label>
                 <div class="options">
-                    <input type="radio" name="q1" id="q1a" onclick="updateProgress()"> <label for="q1a">A. 闹铃 (触发底层代码)</label><br>
+                    <input type="radio" name="q1" id="q1a" onclick="updateProgress()"> <label for="q1a">A. 尿急 (底层驱动)</label><br>
                     <input type="radio" name="q1" id="q1b" onclick="updateProgress()"> <label for="q1b">B. 还没活够 (系统异常)</label><br>
                     <input type="radio" name="q1" id="q1c" onclick="updateProgress()"> <label for="q1c">C. 纯粹是睡不着了 (硬件老化)</label>
                 </div>
@@ -94,38 +95,38 @@
             if (progressPercent >= 100) document.getElementById('progress').style.backgroundColor = "#f85149";
         }
 
-    function submitSurvey() {
-    // 播放音效
-    const audio = document.getElementById('emo-audio');
-    audio.play().catch(e => console.log("音频播放被拦截，需要用户交互"));
+        function submitSurvey() {
+            const form = document.getElementById('survey-form');
+            const checkedCount = form.querySelectorAll('input[type="radio"]:checked').length;
+            
+            if (checkedCount < 5) {
+                alert("请先填完，别想逃避这该死的人生。");
+                return;
+            }
 
-    const form = document.getElementById('survey-form');
-    const checkedCount = form.querySelectorAll('input[type="radio"]:checked').length;
-    
-    if (checkedCount < 5) {
-        alert("请先填完，别想逃避这该死的人生。");
-        return;
-    }
+            // 1. 播放音效
+            const audio = document.getElementById('emo-audio');
+            audio.play().catch(e => console.log("音效由于浏览器限制未能自动播放"));
 
-    const resultDiv = document.getElementById('result');
-    const resultText = document.getElementById('result-text');
-    
-    const evaluations = [
-        "检测到你正处于‘极度节能’模式，建议保持现状，因为努力也没用。",
-        "你的精神状态像一段没有注释的代码，充满了混乱但勉强能跑。",
-        "恭喜！你已成功进化为‘社交隔离器’，世界因你的沉默而安静。",
-        "评估结果：建议立即停止思考，切换至‘睡眠.exe’以保存最后一点能量。",
-        "你是一颗完美的螺丝钉，只是还没找到那个让你生锈的坑。"
-    ];
-    
-    form.classList.add('hidden');
-    resultDiv.classList.remove('hidden');
-    resultText.innerText = evaluations[Math.floor(Math.random() * evaluations.length)];
-    window.scrollTo(0, 0);
-        document.body.classList.add('flash-red');
+            // 2. 视觉闪烁效果
+            document.getElementById('main-body').classList.add('flash-red');
 
-}
-
+            const resultDiv = document.getElementById('result');
+            const resultText = document.getElementById('result-text');
+            
+            const evaluations = [
+                "检测到你正处于‘极度节能’模式，建议保持现状，因为努力也没用。",
+                "你的精神状态像一段没有注释的代码，充满了混乱但勉强能跑。",
+                "恭喜！你已成功进化为‘社交隔离器’，世界因你的沉默而安静。",
+                "评估结果：建议立即停止思考，切换至‘睡眠.exe’以保存最后一点能量。",
+                "你是一颗完美的螺丝钉，只是还没找到那个让你生锈的坑。"
+            ];
+            
+            form.classList.add('hidden');
+            resultDiv.classList.remove('hidden');
+            resultText.innerText = evaluations[Math.floor(Math.random() * evaluations.length)];
+            window.scrollTo(0, 0);
+        }
     </script>
 </body>
 </html>
