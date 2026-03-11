@@ -70,12 +70,13 @@
         <div id="result" class="hidden">
             <h3>🔴 System Status: CRITICAL</h3>
             <p id="result-text"></p>
+            <div id="heart-image-container" class="hidden">
+                </div>
             <p class="retry" onclick="location.reload()">-- 重置人生系统 (F5) --</p>
         </div>
     </div>
 
     <script>
-        // 随机副标题
         const emoSayings = [
             "状态码: 418 (I'm a teapot, and I'm empty)",
             "状态码: 404 (Your happiness not found)",
@@ -88,7 +89,6 @@
             document.querySelector('.subtitle').innerText = emoSayings[Math.floor(Math.random() * emoSayings.length)];
         };
 
-        // 进度条逻辑
         function updateProgress() {
             const form = document.getElementById('survey-form');
             const checkedCount = form.querySelectorAll('input[type="radio"]:checked').length;
@@ -97,7 +97,6 @@
             if (progressPercent >= 100) document.getElementById('progress').style.backgroundColor = "#f85149";
         }
 
-        // 提交逻辑
         function submitSurvey() {
             const form = document.getElementById('survey-form');
             const checkedCount = form.querySelectorAll('input[type="radio"]:checked').length;
@@ -107,16 +106,14 @@
                 return;
             }
 
-            // 播放你上传的 ding.mp4
-            const audio = document.getElementById('emo-audio');
-            audio.play().catch(e => console.log("音效由于浏览器限制未能播放"));
-
-            // 背景闪烁红色
+            // 1. 音效和视觉闪烁
+            document.getElementById('emo-audio').play().catch(e => console.log("音效未播放"));
             document.getElementById('main-body').classList.add('flash-red');
 
             const resultDiv = document.getElementById('result');
             const resultText = document.getElementById('result-text');
             
+            // 2. 随机评价
             const evaluations = [
                 "检测到你正处于‘极度节能’模式，建议保持现状，因为努力也没用。",
                 "你的精神状态像一段没有注释的代码，充满了混乱但勉强能跑。",
@@ -125,6 +122,21 @@
                 "你是一颗完美的螺丝钉，只是还没找到那个让你生锈的坑。"
             ];
             
+            // 3. 动态插入比心图片
+            const imageContainer = document.getElementById('heart-image-container');
+            if (imageContainer.innerHTML.trim() === "") {
+                const img = document.createElement('img');
+                img.src = 'image_0.png'; // 这里指向你上传的文件
+                img.alt = '比心';
+                img.style.maxWidth = '100%';
+                img.style.height = 'auto';
+                img.style.marginTop = '20px';
+                img.style.borderRadius = '8px';
+                img.style.boxShadow = '0 0 15px rgba(88, 166, 255, 0.3)';
+                imageContainer.appendChild(img);
+                imageContainer.classList.remove('hidden');
+            }
+
             form.classList.add('hidden');
             resultDiv.classList.remove('hidden');
             resultText.innerText = evaluations[Math.floor(Math.random() * evaluations.length)];
@@ -133,4 +145,5 @@
     </script>
 </body>
 </html>
+
 
