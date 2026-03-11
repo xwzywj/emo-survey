@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>虚无主义大学生状态检查</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>Commit Your Soul</h1>
+            <p class="subtitle">状态码: 418 (I'm a teapot, and I'm empty)</p>
+        </header>
+
+        <form id="survey-form">
+            <div class="question-group">
+                <label>1. 今天的起床动力来源是？</label>
+                <div class="options">
+                    <input type="radio" name="q1" id="q1a"> <label for="q1a">A. 尿急 (底层驱动)</label><br>
+                    <input type="radio" name="q1" id="q1b"> <label for="q1b">B. 还没活够 (系统异常)</label><br>
+                    <input type="radio" name="q1" id="q1c"> <label for="q1c">C. 纯粹是睡不着了 (硬件老化)</label>
+                </div>
+            </div>
+
+            <div class="question-group">
+                <label>2. 面对期末考试，你的策略是？</label>
+                <div class="options">
+                    <input type="radio" name="q2" id="q2a"> <label for="q2a">A. `git checkout -b escape` (原地逃跑)</label><br>
+                    <input type="radio" name="q2" id="q2b"> <label for="q2b">B. 试图 `Force Push` 知识进大脑</label><br>
+                    <input type="radio" name="q2" id="q2c"> <label for="q2c">C. 摆烂，等待系统崩溃</label>
+                </div>
+            </div>
+
+            <button type="button" onclick="submitSurvey()">Push to Void (提交)</button>
+        </form>
+
+        <div id="result" class="hidden">
+            <p id="result-text"></p>
+        </div>
+    </div>
+
+    <script>
+        function submitSurvey() {
+            const resultDiv = document.getElementById('result');
+            const resultText = document.getElementById('result-text');
+            resultDiv.classList.remove('hidden');
+            resultText.innerText = "提交成功。数据已同步至虚无，没有人会在意的。";
+        }
+    </script>
+</body>
+</html>
