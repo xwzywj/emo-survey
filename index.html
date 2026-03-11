@@ -3,40 +3,61 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>赛博大学生精神鉴定报告 (20题版)</title>
+    <title>虚无主义人生系统</title>
     <link rel="stylesheet" href="style.css">
 </head>
 <body id="main-body">
     <audio id="emo-audio" src="ding.mp4" preload="auto"></audio>
 
     <div class="container">
-        <header>
+        <header id="welcome-section">
             <h1>Commit Your Soul</h1>
-            <p class="subtitle">深度扫描中...</p>
-            
+            <p class="subtitle">检测到未授权灵魂，请初始化代号...</p>
             <div class="user-input-area">
                 <input type="text" id="username" placeholder="输入你的赛博代号..." />
-            </div>
-
-            <div class="progress-bar">
-                <div class="progress-fill" id="progress"></div>
+                <button type="button" onclick="startSurvey()">进入系统</button>
             </div>
         </header>
 
-        <form id="survey-form">
-            <div id="questions-container"></div>
-            <button type="button" id="submit-btn" onclick="submitSurvey()">上传至虚无 (提交)</button>
-        </form>
-
-        <div id="result" class="hidden">
-            <h3>🔴 System Status: CRITICAL</h3>
-            <div id="result-header" style="color: #8b949e; font-size: 0.9em; margin-bottom: 10px;"></div>
-            <div id="result-text" style="margin: 20px 0;"></div>
-            <div id="heart-image-container">
-                <img src="image_0.png" alt="比心" onerror="this.style.display='none'">
+        <section id="survey-section" class="hidden">
+            <div class="header-info">
+                <span id="display-user"></span>
+                <div class="progress-bar"><div class="progress-fill" id="progress"></div></div>
             </div>
-            <p class="retry" onclick="location.reload()">-- 重置人生系统 (F5) --</p>
-        </div>
+            <form id="survey-form">
+                <div id="questions-container"></div>
+                <button type="button" class="btn-primary" onclick="submitSurvey()">上传至虚无</button>
+            </form>
+        </section>
+
+        <section id="result-section" class="hidden">
+            <h3>🔴 System Status: CRITICAL</h3>
+            <div id="result-text"></div>
+            <div id="heart-image-container">
+                <img src="image_0.png" alt="比心">
+            </div>
+            <button class="btn-void" onclick="showProfile()">通往虚无 (进入主页)</button>
+        </section>
+
+        <section id="profile-section" class="hidden">
+            <h2>个人虚无面板</h2>
+            <div class="profile-card">
+                <p><strong>代号：</strong> <span id="p-name"></span></p>
+                <p><strong>当前状态：</strong> <span id="p-status"></span></p>
+                <p><strong>历史记录：</strong> 1次鉴定已存档</p>
+            </div>
+            <div class="nav-buttons">
+                <button onclick="showLeaderboard()">查看全球排行榜</button>
+                <button class="btn-outline" onclick="restartSurvey()">重新鉴定</button>
+            </div>
+        </section>
+
+        <section id="leaderboard-section" class="hidden">
+            <h2>全球虚无值排行榜</h2>
+            <ul id="leaderboard-list">
+                </ul>
+            <button class="btn-outline" onclick="showProfile()">返回面板</button>
+        </section>
     </div>
 
     <script>
@@ -63,79 +84,103 @@
             { q: "最后，你现在的感觉？", a: "想干饭", b: "想睡觉", c: "我不应该在这里" }
         ];
 
+        let currentUser = localStorage.getItem('emo_user') || "";
+        let lastResult = localStorage.getItem('emo_result') || "";
+
         window.onload = function() {
-            document.querySelector('.subtitle').innerText = "状态码: 418 (Teapot Empty)";
+            // 初始化题目
             const container = document.getElementById('questions-container');
             questions.forEach((item, index) => {
                 const div = document.createElement('div');
                 div.className = 'question-group';
-                div.innerHTML = `
-                    <label>${index + 1}. ${item.q}</label>
+                div.innerHTML = `<label>${index + 1}. ${item.q}</label>
                     <div class="options">
                         <input type="radio" name="q${index}" value="A" id="q${index}a" onclick="updateProgress()"> <label for="q${index}a">A. ${item.a}</label><br>
                         <input type="radio" name="q${index}" value="B" id="q${index}b" onclick="updateProgress()"> <label for="q${index}b">B. ${item.b}</label><br>
                         <input type="radio" name="q${index}" value="C" id="q${index}c" onclick="updateProgress()"> <label for="q${index}c">C. ${item.c}</label>
-                    </div>
-                `;
+                    </div>`;
                 container.appendChild(div);
             });
+
+            // 检查历史状态
+            if (currentUser && lastResult) {
+                showProfile();
+            } else if (currentUser) {
+                startSurvey();
+            }
         };
 
+        function startSurvey() {
+            const inputName = document.getElementById('username').value.trim();
+            if (!currentUser && !inputName) return alert("请赐予你的灵魂一个代号");
+            if (!currentUser) currentUser = inputName;
+            
+            localStorage.setItem('emo_user', currentUser);
+            document.getElementById('display-user').innerText = "受检者: " + currentUser;
+            switchSection('survey-section');
+        }
+
         function updateProgress() {
-            const checkedCount = document.querySelectorAll('input[type="radio"]:checked').length;
-            const progressPercent = (checkedCount / questions.length) * 100;
-            document.getElementById('progress').style.width = progressPercent + '%';
+            const checked = document.querySelectorAll('input[type="radio"]:checked').length;
+            document.getElementById('progress').style.width = (checked / questions.length) * 100 + '%';
         }
 
         function submitSurvey() {
-            const username = document.getElementById('username').value.trim();
             const checked = document.querySelectorAll('input[type="radio"]:checked');
+            if (checked.length < questions.length) return alert("还没填完，别想逃");
             
-            // 校验用户名
-            if (!username) {
-                alert("请输入用户名，系统无法扫描无主灵魂。");
-                return;
-            }
+            if (currentUser.toLowerCase() === "pluviophile") alert("I死了");
 
-            // 特殊弹窗逻辑
-            if (username.toLowerCase() === "pluviophile") {
-                alert("I死了");
-            }
-
-            if (checked.length < questions.length) {
-                alert(`还有 ${questions.length - checked.length} 题没答，逃避是没用的。`);
-                return;
-            }
-
-            document.getElementById('emo-audio').play().catch(e => {});
-            document.getElementById('main-body').classList.add('flash-red');
+            document.getElementById('emo-audio').play().catch(()=>{});
+            document.body.classList.add('flash-red');
 
             let counts = { A: 0, B: 0, C: 0 };
-            checked.forEach(input => { counts[input.value]++; });
+            checked.forEach(i => counts[i.value]++);
 
-            let title, desc;
-            if (counts.C >= 10) {
-                title = "【绝对虚无主义者】(XW-ZZ)";
-                desc = "你已进化为赛博幽灵，看透了一切逻辑背后的荒诞。";
-            } else if (counts.B >= counts.A) {
-                title = "【系统延迟观察者】(YC-GZ)";
-                desc = "你在摆烂与焦虑之间反复横跳，是典型的多线程报错状态。";
-            } else {
-                title = "【生存本能驱动者】(SC-BN)";
-                desc = "虽然世界很破，但你依然靠着干饭和睡觉维持着系统运行。";
-            }
+            let title = counts.C >= 10 ? "【绝对虚无主义者】" : (counts.B >= counts.A ? "【系统延迟观察者】" : "【生存本能驱动者】");
+            lastResult = title;
+            localStorage.setItem('emo_result', title);
 
-            document.getElementById('survey-form').classList.add('hidden');
-            document.getElementById('username').parentElement.classList.add('hidden');
-            const resultDiv = document.getElementById('result');
-            document.getElementById('result-header').innerText = `受检用户: ${username}`;
-            document.getElementById('result-text').innerHTML = `<strong style="color: #58a6ff; font-size: 1.2em;">${title}</strong><br><br>${desc}`;
-            resultDiv.classList.remove('hidden');
-            window.scrollTo(0, 0);
+            document.getElementById('result-text').innerText = "鉴定完成：" + title;
+            switchSection('result-section');
+        }
+
+        function showProfile() {
+            document.getElementById('p-name').innerText = currentUser;
+            document.getElementById('p-status').innerText = lastResult;
+            switchSection('profile-section');
+        }
+
+        function showLeaderboard() {
+            const list = document.getElementById('leaderboard-list');
+            list.innerHTML = "";
+            const mockUsers = [
+                {n: "Pluviophile", r: "【绝对虚无】", v: "99%"},
+                {n: "阿珍", r: "【生存驱动】", v: "45%"},
+                {n: "代码屠夫", r: "【系统延迟】", v: "72%"},
+                {n: currentUser, r: lastResult, v: "计算中..."}
+            ];
+            mockUsers.forEach(u => {
+                const li = document.createElement('li');
+                li.innerHTML = `<span>${u.n}</span><span>${u.r}</span>`;
+                list.appendChild(li);
+            });
+            switchSection('leaderboard-section');
+        }
+
+        function restartSurvey() {
+            localStorage.removeItem('emo_result');
+            location.reload();
+        }
+
+        function switchSection(id) {
+            document.querySelectorAll('section, header').forEach(s => s.classList.add('hidden'));
+            document.getElementById(id).classList.remove('hidden');
         }
     </script>
 </body>
 </html>
+
 
 
 
