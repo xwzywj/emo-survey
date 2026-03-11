@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>虚无主义人生系统</title>
+    <title>赛博人格鉴定系统</title>
     <link rel="stylesheet" href="style.css">
 </head>
 <body id="main-body">
@@ -12,174 +12,249 @@
     <div class="container">
         <header id="welcome-section">
             <h1>Commit Your Soul</h1>
-            <p class="subtitle">检测到未授权灵魂，请初始化代号...</p>
+            <p class="subtitle">身份识别中...</p>
             <div class="user-input-area">
                 <input type="text" id="username" placeholder="输入你的赛博代号..." />
-                <button type="button" onclick="startSurvey()">进入系统</button>
+                <button class="btn-primary" onclick="startSystem()">启动系统</button>
             </div>
         </header>
 
-        <section id="survey-section" class="hidden">
-            <div class="header-info">
-                <span id="display-user"></span>
-                <div class="progress-bar"><div class="progress-fill" id="progress"></div></div>
+        <section id="choice-section" class="hidden">
+            <h2 id="hello-user">你好</h2>
+            <div class="nav-buttons">
+                <button class="btn-void" onclick="startSurvey('mbti')">MBTI 国际核心测试 (28题分页版)</button>
+                <button class="btn-void" onclick="startSurvey('emo')">虚无主义状态检查 (20题)</button>
+                <button class="btn-outline" onclick="showProfile()">进入个人主页</button>
             </div>
-            <form id="survey-form">
-                <div id="questions-container"></div>
-                <button type="button" class="btn-primary" onclick="submitSurvey()">上传至虚无</button>
-            </form>
         </section>
 
-        <section id="result-section" class="hidden">
-            <h3>🔴 System Status: CRITICAL</h3>
-            <div id="result-text"></div>
-            <div id="heart-image-container">
-                <img src="image_0.png" alt="比心">
+        <section id="survey-section" class="hidden">
+            <div class="header-info">
+                <span id="survey-title">扫描中...</span>
+                <div class="progress-bar"><div class="progress-fill" id="progress"></div></div>
             </div>
-            <button class="btn-void" onclick="showProfile()">通往虚无 (进入主页)</button>
+            
+            <div id="question-card">
+                </div>
+
+            <div class="nav-controls">
+                <button id="prev-btn" class="btn-nav" onclick="changeQuestion(-1)">上一题</button>
+                <button id="next-btn" class="btn-nav" onclick="changeQuestion(1)">下一题</button>
+                <button id="finish-btn" class="btn-primary hidden" onclick="processSubmit()">完成分析</button>
+            </div>
         </section>
 
         <section id="profile-section" class="hidden">
-            <h2>个人虚无面板</h2>
+            <h2>个人面板</h2>
             <div class="profile-card">
-                <p><strong>代号：</strong> <span id="p-name"></span></p>
-                <p><strong>当前状态：</strong> <span id="p-status"></span></p>
-                <p><strong>历史记录：</strong> 1次鉴定已存档</p>
+                <p><strong>代号：</strong> <span id="p-name">--</span></p>
+                <p><strong>MBTI人格：</strong> <span id="p-mbti" class="tag">未测试</span></p>
+                <p><strong>精神状态：</strong> <span id="p-status">未鉴定</span></p>
+                <p><strong>最近测速：</strong> <span id="p-time">0s</span></p>
+            </div>
+            <div id="heart-image-container">
+                <img src="image_0.png" alt="比心" onerror="this.style.display='none'">
             </div>
             <div class="nav-buttons">
-                <button onclick="showLeaderboard()">查看全球排行榜</button>
-                <button class="btn-outline" onclick="restartSurvey()">重新鉴定</button>
+                <button class="btn-primary" onclick="switchSection('choice-section')">新测试</button>
+                <button class="btn-outline" onclick="showLeaderboard()">全球排行</button>
+                <button class="btn-outline" style="color:#f85149" onclick="resetAll()">注销</button>
             </div>
         </section>
 
         <section id="leaderboard-section" class="hidden">
-            <h2>全球虚无值排行榜</h2>
-            <ul id="leaderboard-list">
-                </ul>
+            <h2>全球排行</h2>
+            <ul id="leaderboard-list"></ul>
             <button class="btn-outline" onclick="showProfile()">返回面板</button>
         </section>
     </div>
 
     <script>
-        const questions = [
-            { q: "起床后的第一念头？", a: "尿急", b: "还没活够", c: "为什么会有早八" },
-            { q: "面对期末考，你的策略？", a: "转发锦鲤", b: "试图硬塞知识", c: "原地逃跑" },
-            { q: "路上看到不熟的同学？", a: "假装玩手机", b: "低头看脚尖", c: "隐身模式开启" },
-            { q: "关于‘今天吃什么’？", a: "批阅外卖软件", b: "吃别人剩下的", c: "光合作用" },
-            { q: "十年后的自己？", a: "已被删除", b: "只要活不到那时就没事", c: "在长椅上看世界" },
-            { q: "手机电量低于 20% 时？", a: "疯狂找线", b: "听天由命", c: "感到一种解脱" },
-            { q: "收到‘在吗’后的反应？", a: "瞬间装死", b: "视奸朋友圈", c: "礼貌性消失" },
-            { q: "你的社交状态？", a: "只要我不尴尬", b: "盛大的自闭", c: "只读模式" },
-            { q: "周日的晚上在想什么？", a: "明天吃什么", b: "还没开始过周末", c: "世界怎么还没毁灭" },
-            { q: "对工作的态度？", a: "为了五斗米", b: "摸鱼专家", c: "电子荒原漂流者" },
-            { q: "熬夜的原因？", a: "剧太好看", b: "报复性补偿", c: "灵魂在修仙" },
-            { q: "你的存款状态？", a: "四大皆空", b: "恩格尔系数 100%", c: "负资产运行" },
-            { q: "面对突发任务？", a: "原地崩溃", b: "熟练推脱", c: "假装没看见" },
-            { q: "你的核心竞争力？", a: "能吃", b: "能睡", c: "能忍受虚无" },
-            { q: "洗澡时的活动？", a: "思考人生", b: "开演唱会", c: "单纯发呆" },
-            { q: "对‘成功’的定义？", a: "发财", b: "躺平", c: "今天没哭" },
-            { q: "你的衣柜风格？", a: "那几件轮换", b: "黑色显瘦", c: "穿得像个路人" },
-            { q: "关于旅行？", a: "朋友圈一日游", b: "酒店深度游", c: "我想去外星" },
-            { q: "面对批评？", a: "瞬间破防", b: "左耳进右耳出", c: "你说得对，但我没救了" },
-            { q: "最后，你现在的感觉？", a: "想干饭", b: "想睡觉", c: "我不应该在这里" }
+        // 完整的 28 道 MBTI 题目 (5阶量表适配)
+        const mbtiQuestions = [
+            {q:"你通常在社交聚会后感到精力充沛。", d:"EI"},
+            {q:"你更喜欢关注细节和事实，而不是理论。", d:"SN"},
+            {q:"你认为逻辑比情感在决策中更可靠。", d:"TF"},
+            {q:"你喜欢把事情提前安排得井井有条。", d:"JP"},
+            {q:"你更喜欢独自思考，而不是头脑风暴。", d:"EI", rev:true},
+            {q:"你经常寻找事物背后的深层含义。", d:"SN", rev:true},
+            {q:"你很容易对他人的情绪感同身受。", d:"TF", rev:true},
+            {q:"你觉得灵活变通比按计划行事更舒服。", d:"JP", rev:true},
+            {q:"在聚会中，你通常是主动找人说话的那方。", d:"EI"},
+            {q:"你更信任自己的经验而不是直觉。", d:"SN"},
+            {q:"你觉得在职场中“对事不对人”很重要。", d:"TF"},
+            {q:"你的桌面和房间通常是整洁的。", d:"JP"},
+            {q:"你倾向于在开口前先在脑中想好。", d:"EI", rev:true},
+            {q:"你喜欢尝试新奇的、未经验证的点子。", d:"SN", rev:true},
+            {q:"你做决定时很难不考虑他人的感受。", d:"TF", rev:true},
+            {q:"你更喜欢走一步看一步，而不是死守计划。", d:"JP", rev:true},
+            {q:"你喜欢成为话题的中心。", d:"EI"},
+            {q:"你对虚构的科幻情节比现实新闻更感兴趣。", d:"SN", rev:true},
+            {q:"你认为效率比和睦更重要。", d:"TF"},
+            {q:"你习惯于给每天列“待办清单”。", d:"JP"},
+            {q:"你觉得过多的社交活动让你疲惫。", d:"EI", rev:true},
+            {q:"你擅长注意到环境中的微小变化。", d:"SN"},
+            {q:"在冲突中，你更关注谁更有道理。", d:"TF"},
+            {q:"你更喜欢自发的旅行而不是详细的攻略。", d:"JP", rev:true},
+            {q:"你更喜欢文字沟通而不是电话交流。", d:"EI", rev:true},
+            {q:"你倾向于看大局，而不是纠结细节。", d:"SN", rev:true},
+            {q:"你被认为是感性且温柔的人。", d:"TF", rev:true},
+            {q:"你总是能在截止日期前很久完成任务。", d:"JP"}
         ];
 
-        let currentUser = localStorage.getItem('emo_user') || "";
-        let lastResult = localStorage.getItem('emo_result') || "";
+        // 20 道虚无题目
+        const emoQuestions = [
+            {q:"起床后的第一念头？", a:"尿急", b:"生存欲", c:"虚无"},
+            {q:"期末考策略？", a:"转发锦鲤", b:"硬塞知识", c:"原地逃跑"},
+            {q:"看到不熟的同学？", a:"玩手机", b:"看地砖", c:"隐身"},
+            {q:"今天吃什么？", a:"阅奏折", b:"谁都行", c:"光合作用"},
+            {q:"十年后的自己？", a:"删除", b:"随缘", c:"看长椅"},
+            {q:"电量低于20%？", a:"找线", b:"随它去", c:"解脱"},
+            {q:"收到“在吗”？", a:"装死", b:"视奸", c:"消失"},
+            {q:"社交状态？", a:"尴尬", b:"自闭", c:"只读"},
+            {q:"周日晚在想？", a:"干饭", b:"不想动", c:"毁灭吧"},
+            {q:"工作态度？", a:"五斗米", b:"摸鱼", c:"漂流"},
+            {q:"熬夜原因？", a:"剧好", b:"补偿", c:"修仙"},
+            {q:"存款状态？", a:"空", b:"饭钱", c:"负债"},
+            {q:"突发任务？", a:"崩", b:"推", c:"瞎"},
+            {q:"核心竞争力？", a:"吃", b:"睡", c:"忍"},
+            {q:"洗澡时？", a:"想人生", b:"唱歌", c:"发呆"},
+            {q:"成功定义？", a:"钱", b:"躺", c:"没哭"},
+            {q:"衣柜风格？", a:"换着穿", b:"全黑", c:"路人"},
+            {q:"关于旅行？", a:"朋友圈", b:"酒店", c:"外星"},
+            {q:"面对批评？", a:"破防", b:"耳风", c:"没救"},
+            {q:"现在感觉？", a:"饭", b:"觉", c:"撤"}
+        ];
 
-        window.onload = function() {
-            // 初始化题目
-            const container = document.getElementById('questions-container');
-            questions.forEach((item, index) => {
-                const div = document.createElement('div');
-                div.className = 'question-group';
-                div.innerHTML = `<label>${index + 1}. ${item.q}</label>
-                    <div class="options">
-                        <input type="radio" name="q${index}" value="A" id="q${index}a" onclick="updateProgress()"> <label for="q${index}a">A. ${item.a}</label><br>
-                        <input type="radio" name="q${index}" value="B" id="q${index}b" onclick="updateProgress()"> <label for="q${index}b">B. ${item.b}</label><br>
-                        <input type="radio" name="q${index}" value="C" id="q${index}c" onclick="updateProgress()"> <label for="q${index}c">C. ${item.c}</label>
-                    </div>`;
-                container.appendChild(div);
-            });
-
-            // 检查历史状态
-            if (currentUser && lastResult) {
-                showProfile();
-            } else if (currentUser) {
-                startSurvey();
-            }
+        let state = {
+            user: localStorage.getItem('emo_user') || "",
+            type: "",
+            currentIndex: 0,
+            answers: {},
+            startTime: 0,
+            currentList: []
         };
 
-        function startSurvey() {
-            const inputName = document.getElementById('username').value.trim();
-            if (!currentUser && !inputName) return alert("请赐予你的灵魂一个代号");
-            if (!currentUser) currentUser = inputName;
-            
-            localStorage.setItem('emo_user', currentUser);
-            document.getElementById('display-user').innerText = "受检者: " + currentUser;
+        function startSystem() {
+            const name = document.getElementById('username').value.trim();
+            if (!name && !state.user) return alert("灵魂需要代号");
+            state.user = state.user || name;
+            localStorage.setItem('emo_user', state.user);
+            showProfile();
+        }
+
+        function startSurvey(type) {
+            state.type = type;
+            state.currentList = type === 'mbti' ? mbtiQuestions : emoQuestions;
+            state.currentIndex = 0;
+            state.answers = {};
+            state.startTime = Date.now();
+            renderQuestion();
             switchSection('survey-section');
         }
 
-        function updateProgress() {
-            const checked = document.querySelectorAll('input[type="radio"]:checked').length;
-            document.getElementById('progress').style.width = (checked / questions.length) * 100 + '%';
+        function renderQuestion() {
+            const q = state.currentList[state.currentIndex];
+            const container = document.getElementById('question-card');
+            let html = `<div class="question-text">${state.currentIndex + 1}. ${q.q}</div>`;
+            
+            if (state.type === 'mbti') {
+                const opts = ["非常不同意", "不同意", "一般", "同意", "非常同意"];
+                html += `<div class="options-5">`;
+                opts.forEach((opt, i) => {
+                    const checked = state.answers[state.currentIndex] == (i+1) ? 'checked' : '';
+                    html += `<label class="opt-label"><input type="radio" name="cur" value="${i+1}" ${checked} onclick="saveAns(${i+1})"> <span>${opt}</span></label>`;
+                });
+                html += `</div>`;
+            } else {
+                ["A", "B", "C"].forEach(v => {
+                    const checked = state.answers[state.currentIndex] === v ? 'checked' : '';
+                    const label = v === "A" ? q.a : (v === "B" ? q.b : q.c);
+                    html += `<label class="opt-label"><input type="radio" name="cur" value="${v}" ${checked} onclick="saveAns('${v}')"> ${v}. ${label}</label>`;
+                });
+            }
+            container.innerHTML = html;
+            updateNav();
         }
 
-        function submitSurvey() {
-            const checked = document.querySelectorAll('input[type="radio"]:checked');
-            if (checked.length < questions.length) return alert("还没填完，别想逃");
-            
-            if (currentUser.toLowerCase() === "pluviophile") alert("I死了");
+        function saveAns(v) {
+            state.answers[state.currentIndex] = v;
+            updateProgress();
+        }
 
-            document.getElementById('emo-audio').play().catch(()=>{});
-            document.body.classList.add('flash-red');
+        function changeQuestion(dir) {
+            state.currentIndex += dir;
+            renderQuestion();
+        }
 
-            let counts = { A: 0, B: 0, C: 0 };
-            checked.forEach(i => counts[i.value]++);
+        function updateNav() {
+            document.getElementById('prev-btn').disabled = state.currentIndex === 0;
+            const isLast = state.currentIndex === state.currentList.length - 1;
+            document.getElementById('next-btn').classList.toggle('hidden', isLast);
+            document.getElementById('finish-btn').classList.toggle('hidden', !isLast);
+        }
 
-            let title = counts.C >= 10 ? "【绝对虚无主义者】" : (counts.B >= counts.A ? "【系统延迟观察者】" : "【生存本能驱动者】");
-            lastResult = title;
-            localStorage.setItem('emo_result', title);
+        function updateProgress() {
+            const answered = Object.keys(state.answers).length;
+            document.getElementById('progress').style.width = (answered / state.currentList.length) * 100 + '%';
+        }
 
-            document.getElementById('result-text').innerText = "鉴定完成：" + title;
-            switchSection('result-section');
+        function processSubmit() {
+            if (Object.keys(state.answers).length < state.currentList.length) return alert("请完成所有题目");
+            const duration = ((Date.now() - state.startTime) / 1000).toFixed(1);
+            localStorage.setItem('last_time', duration + "s");
+
+            if (state.type === 'mbti') {
+                let r = {E:0, I:0, S:0, N:0, T:0, F:0, J:0, P:0};
+                mbtiQuestions.forEach((q, i) => {
+                    const val = parseInt(state.answers[i]);
+                    const score = val - 3;
+                    const point = q.rev ? -score : score;
+                    if (point > 0) r[q.d[0]] += point; else r[q.d[1]] += Math.abs(point);
+                });
+                const res = (r.E>=r.I?"E":"I")+(r.S>=r.N?"S":"N")+(r.T>=r.F?"T":"F")+(r.J>=r.P?"J":"P");
+                localStorage.setItem('mbti_res', res);
+            } else {
+                let c = {A:0, B:0, C:0};
+                Object.values(state.answers).forEach(v => c[v]++);
+                const res = c.C>=10?"绝对虚无":(c.B>=c.A?"系统延迟":"生存本能");
+                localStorage.setItem('emo_res', res);
+            }
+            if (state.user.toLowerCase() === "pluviophile") alert("I死了");
+            showProfile();
         }
 
         function showProfile() {
-            document.getElementById('p-name').innerText = currentUser;
-            document.getElementById('p-status').innerText = lastResult;
+            document.getElementById('p-name').innerText = state.user;
+            document.getElementById('p-mbti').innerText = localStorage.getItem('mbti_res') || "未测试";
+            document.getElementById('p-status').innerText = localStorage.getItem('emo_res') || "未鉴定";
+            document.getElementById('p-time').innerText = localStorage.getItem('last_time') || "0s";
             switchSection('profile-section');
-        }
-
-        function showLeaderboard() {
-            const list = document.getElementById('leaderboard-list');
-            list.innerHTML = "";
-            const mockUsers = [
-                {n: "Pluviophile", r: "【绝对虚无】", v: "99%"},
-                {n: "阿珍", r: "【生存驱动】", v: "45%"},
-                {n: "代码屠夫", r: "【系统延迟】", v: "72%"},
-                {n: currentUser, r: lastResult, v: "计算中..."}
-            ];
-            mockUsers.forEach(u => {
-                const li = document.createElement('li');
-                li.innerHTML = `<span>${u.n}</span><span>${u.r}</span>`;
-                list.appendChild(li);
-            });
-            switchSection('leaderboard-section');
-        }
-
-        function restartSurvey() {
-            localStorage.removeItem('emo_result');
-            location.reload();
         }
 
         function switchSection(id) {
             document.querySelectorAll('section, header').forEach(s => s.classList.add('hidden'));
             document.getElementById(id).classList.remove('hidden');
+            window.scrollTo(0,0);
+        }
+
+        function resetAll() { if(confirm("注销？")){localStorage.clear(); location.reload();} }
+
+        function showLeaderboard() {
+            const list = document.getElementById('leaderboard-list');
+            list.innerHTML = `<li><span>用户</span><span>人格</span><span>用时</span></li>`;
+            const d = [{n:"Pluviophile", m:"INFJ", t:"38s"}, {n:state.user, m:localStorage.getItem('mbti_res')||"?", t:localStorage.getItem('last_time')||"?"}];
+            d.forEach(i => {
+                const li = document.createElement('li');
+                li.innerHTML = `<span>${i.n}</span><span>${i.m}</span><span>${i.t}</span>`;
+                list.appendChild(li);
+            });
+            switchSection('leaderboard-section');
         }
     </script>
 </body>
 </html>
+
 
 
 
