@@ -3,16 +3,18 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>赛博人格鉴定系统</title>
+    <title>Commit Your Soul - 故障风崩溃版</title>
     <link rel="stylesheet" href="style.css">
 </head>
 <body id="main-body">
+    <canvas id="crash-canvas"></canvas>
+
     <audio id="emo-audio" src="ding.mp4" preload="auto"></audio>
 
     <div class="container">
         <header id="welcome-section">
             <h1>Commit Your Soul</h1>
-            <p class="subtitle">身份识别中...</p>
+            <p class="subtitle">身份识别中... 正在向深渊上传数据</p>
             <div class="user-input-area">
                 <input type="text" id="username" placeholder="输入你的赛博代号..." />
                 <button class="btn-primary" onclick="startSystem()">启动系统</button>
@@ -22,25 +24,28 @@
         <section id="choice-section" class="hidden">
             <h2 id="hello-user">你好</h2>
             <div class="nav-buttons">
-                <button class="btn-void" onclick="startSurvey('mbti')">MBTI 国际核心测试 (28题分页版)</button>
-                <button class="btn-void" onclick="startSurvey('emo')">虚无主义状态检查 (20题)</button>
-                <button class="btn-outline" onclick="showProfile()">进入个人主页</button>
+                <button class="btn-void" onclick="startSurvey('mbti')">
+                    <strong>MBTI 深度测量</strong><br><small>28题 / 核心人格映射</small>
+                </button>
+                <button class="btn-void" onclick="startSurvey('emo')">
+                    <strong>虚无主义灰度检测</strong><br><small>20题 / 深度忧郁文案 / 灵魂损耗度分析</small>
+                </button>
+                <button class="btn-outline" onclick="showProfile()">个人面板</button>
             </div>
         </section>
 
         <section id="survey-section" class="hidden">
             <div class="header-info">
-                <span id="survey-title">扫描中...</span>
+                <span id="survey-title">正在上传数据...</span>
                 <div class="progress-bar"><div class="progress-fill" id="progress"></div></div>
             </div>
             
-            <div id="question-card">
-                </div>
+            <div id="question-card"></div>
 
             <div class="nav-controls">
-                <button id="prev-btn" class="btn-nav" onclick="changeQuestion(-1)">上一题</button>
-                <button id="next-btn" class="btn-nav" onclick="changeQuestion(1)">下一题</button>
-                <button id="finish-btn" class="btn-primary hidden" onclick="processSubmit()">完成分析</button>
+                <button id="prev-btn" class="btn-nav" onclick="changeQuestion(-1)">PREV</button>
+                <button id="next-btn" class="btn-nav" onclick="changeQuestion(1)">NEXT</button>
+                <button id="finish-btn" class="btn-primary hidden" onclick="processSubmit()">UPLOAD TO VOID</button>
             </div>
         </section>
 
@@ -50,27 +55,27 @@
                 <p><strong>代号：</strong> <span id="p-name">--</span></p>
                 <p><strong>MBTI人格：</strong> <span id="p-mbti" class="tag">未测试</span></p>
                 <p><strong>精神状态：</strong> <span id="p-status">未鉴定</span></p>
-                <p><strong>最近测速：</strong> <span id="p-time">0s</span></p>
+                <p><strong>最近用时：</strong> <span id="p-time">0s</span></p>
             </div>
             <div id="heart-image-container">
                 <img src="image_0.png" alt="比心" onerror="this.style.display='none'">
             </div>
             <div class="nav-buttons">
                 <button class="btn-primary" onclick="switchSection('choice-section')">新测试</button>
-                <button class="btn-outline" onclick="showLeaderboard()">全球排行</button>
-                <button class="btn-outline" style="color:#f85149" onclick="resetAll()">注销</button>
+                <button class="btn-outline" onclick="showLeaderboard()">虚无排行</button>
+                <button class="btn-outline" style="color:#f85149" onclick="resetAll()">格式化档案</button>
             </div>
         </section>
 
         <section id="leaderboard-section" class="hidden">
             <h2>全球排行</h2>
             <ul id="leaderboard-list"></ul>
-            <button class="btn-outline" onclick="showProfile()">返回面板</button>
+            <button class="btn-outline" onclick="showProfile()">返回</button>
         </section>
     </div>
 
     <script>
-        // 完整的 28 道 MBTI 题目 (5阶量表适配)
+        // MBTI 28题
         const mbtiQuestions = [
             {q:"你通常在社交聚会后感到精力充沛。", d:"EI"},
             {q:"你更喜欢关注细节和事实，而不是理论。", d:"SN"},
@@ -102,28 +107,28 @@
             {q:"你总是能在截止日期前很久完成任务。", d:"JP"}
         ];
 
-        // 20 道虚无题目
+        // 虚无主义 20题（忧郁丧版）
         const emoQuestions = [
-            {q:"起床后的第一念头？", a:"尿急", b:"生存欲", c:"虚无"},
-            {q:"期末考策略？", a:"转发锦鲤", b:"硬塞知识", c:"原地逃跑"},
-            {q:"看到不熟的同学？", a:"玩手机", b:"看地砖", c:"隐身"},
-            {q:"今天吃什么？", a:"阅奏折", b:"谁都行", c:"光合作用"},
-            {q:"十年后的自己？", a:"删除", b:"随缘", c:"看长椅"},
-            {q:"电量低于20%？", a:"找线", b:"随它去", c:"解脱"},
-            {q:"收到“在吗”？", a:"装死", b:"视奸", c:"消失"},
-            {q:"社交状态？", a:"尴尬", b:"自闭", c:"只读"},
-            {q:"周日晚在想？", a:"干饭", b:"不想动", c:"毁灭吧"},
-            {q:"工作态度？", a:"五斗米", b:"摸鱼", c:"漂流"},
-            {q:"熬夜原因？", a:"剧好", b:"补偿", c:"修仙"},
-            {q:"存款状态？", a:"空", b:"饭钱", c:"负债"},
-            {q:"突发任务？", a:"崩", b:"推", c:"瞎"},
-            {q:"核心竞争力？", a:"吃", b:"睡", c:"忍"},
-            {q:"洗澡时？", a:"想人生", b:"唱歌", c:"发呆"},
-            {q:"成功定义？", a:"钱", b:"躺", c:"没哭"},
-            {q:"衣柜风格？", a:"换着穿", b:"全黑", c:"路人"},
-            {q:"关于旅行？", a:"朋友圈", b:"酒店", c:"外星"},
-            {q:"面对批评？", a:"破防", b:"耳风", c:"没救"},
-            {q:"现在感觉？", a:"饭", b:"觉", c:"撤"}
+            {q:"如果你的生命是一盘磁带，你认为现在的底噪是？", a:"激昂嘈杂的电流声", b:"漫长单调的空白", c:"被磁头缓缓磨损的尖叫"},
+            {q:"清晨睁开眼，你的第一反应是？", a:"全新的模拟", b:"不得不继续的苦差", c:"为什么程序还没崩溃"},
+            {q:"在人群中，你感到一种‘透明感’吗？", a:"从不", b:"偶尔感到安全", c:"始终只是背景像素"},
+            {q:"你如何看待‘努力’这个词？", a:"通往意义的路径", b:"对抗无聊的消遣", c:"给虚无涂抹的劣质油漆"},
+            {q:"十年后的你会在这里？", a:"在成就在平庸里", b:"在循环里", c:"Maybe已被删除"},
+            {q:"手机电量跳至1%时，你的感觉？", a:"快找线", b:"终于可以失踪了", c:"它死去了，我却还要继续"},
+            {q:"向他人倾诉痛苦时，你看到的是？", a:"同情的目光", b:"礼貌的伪装", c:"深渊在另一个深渊里的倒影"},
+            {q:"你认为社交对你意味着？", a:"能交换取暖", b:"两孤独相磨损", c:"掩盖腐烂气味的廉价香水"},
+            {q:"当你凝视窗外深夜，你在想？", a:"明天任务", b:"远方孤独", c:"黑暗才是真相"},
+            {q:"你如何评价目前的自己？", a:"进化中的生命体", b:"损耗旧机器", c:"散落的旧代码"},
+            {q:"如果可以重启，你会选择？", a:"更高挑战", b:"修正遗憾", c:"拒不再次进入游戏"},
+            {q:"世界末日就在今晚，最后一餐你会选择？", a:"最昂贵珍馐", b:"过期的面包", c:"吞下这沉重的空气"},
+            {q:"当你照镜子时，看到的不仅仅是脸，还有？", a:"成长的自我", b:"逐渐陌生的零件", c:"正在加速崩解的荒原"},
+            {q:"在城市里，你觉得你是？", a:"奔跑齿轮", b:"沙砾", c:"旁观的幽灵"},
+            {q:"深夜雨声听起来像是？", a:"大自然洗礼", b:"世界替你流泪", c:"这星球缓慢腐烂的低语"},
+            {q:"最后，你认为你消失后这个世界会？", a:"感到遗憾", b:"像从未有过一样运转", c:"lazy泛起一丝涟漪"},
+            {q:"对‘成功’的定义？", a:"发财", b:"躺平", c:"今天没哭"},
+            {q:"核心竞争力？", a:"能吃", b:"能睡", c:"能忍虚无"},
+            {q:"面对突发任务？", a:"崩溃", b:"推脱", c:"瞎"},
+            {q:"你觉得‘家’贴切定义是？", a:"避风港", b:"存放疲惫体箱", c:"合法牢笼"}
         ];
 
         let state = {
@@ -138,6 +143,8 @@
         function startSystem() {
             const name = document.getElementById('username').value.trim();
             if (!name && !state.user) return alert("灵魂需要代号");
+            const audio = document.getElementById('emo-audio');
+            audio.play().then(() => { audio.pause(); }).catch(() => {});
             state.user = state.user || name;
             localStorage.setItem('emo_user', state.user);
             showProfile();
@@ -160,7 +167,7 @@
             
             if (state.type === 'mbti') {
                 const opts = ["非常不同意", "不同意", "一般", "同意", "非常同意"];
-                html += `<div class="options-5">`;
+                html += `<div class="options-container">`;
                 opts.forEach((opt, i) => {
                     const checked = state.answers[state.currentIndex] == (i+1) ? 'checked' : '';
                     html += `<label class="opt-label"><input type="radio" name="cur" value="${i+1}" ${checked} onclick="saveAns(${i+1})"> <span>${opt}</span></label>`;
@@ -170,7 +177,7 @@
                 ["A", "B", "C"].forEach(v => {
                     const checked = state.answers[state.currentIndex] === v ? 'checked' : '';
                     const label = v === "A" ? q.a : (v === "B" ? q.b : q.c);
-                    html += `<label class="opt-label"><input type="radio" name="cur" value="${v}" ${checked} onclick="saveAns('${v}')"> ${v}. ${label}</label>`;
+                    html += `<label class="opt-label"><input type="radio" name="cur" value="${v}" ${checked} onclick="saveAns('${v}')"> <span>${v}. ${label}</span></label>`;
                 });
             }
             container.innerHTML = html;
@@ -199,20 +206,13 @@
             document.getElementById('progress').style.width = (answered / state.currentList.length) * 100 + '%';
         }
 
-                function processSubmit() {
-            if (Object.keys(state.answers).length < state.currentList.length) return alert("请完成所有题目");
-            
-            // --- 核心修复：在这里触发音效 ---
+        function processSubmit() {
+            if (Object.keys(state.answers).length < state.currentList.length) return alert("请完成所有灵魂扫描");
+
             const audio = document.getElementById('emo-audio');
-            if (audio) {
-                audio.currentTime = 0; // 重置进度，防止连点没声音
-                audio.play().catch(e => console.log("音频播放被拦截:", e));
-            }
-            
-            // 触发闪红特效（需要 CSS 配合）
+            if (audio) { audio.currentTime = 0; audio.play().catch(()=>{}); }
             document.body.classList.add('flash-red');
             setTimeout(() => document.body.classList.remove('flash-red'), 500);
-            // ------------------------------
 
             const duration = ((Date.now() - state.startTime) / 1000).toFixed(1);
             localStorage.setItem('last_time', duration + "s");
@@ -228,19 +228,22 @@
                 const res = (r.E>=r.I?"E":"I")+(r.S>=r.N?"S":"N")+(r.T>=r.F?"T":"F")+(r.J>=r.P?"J":"P");
                 localStorage.setItem('mbti_res', res);
             } else {
-                let c = {A:0, B:0, C:0};
-                Object.values(state.answers).forEach(v => c[v]++);
-                const res = c.C>=10?"绝对虚无":(c.B>=c.A?"系统延迟":"生存本能");
-                localStorage.setItem('emo_res', res);
+                let cCount = 0;
+                Object.values(state.answers).forEach(v => { if(v==='C') cCount++; });
+                let status = "";
+                if(cCount >= 15) status = "【灵魂灰度 99% - 纯粹虚无体】";
+                else if(cCount >= 8) status = "【慢性崩解中 - 赛博游魂】";
+                else if(cCount >= 4) status = "【系统延迟 - 逻辑幸存者】";
+                else status = "【伪装成功 - 碳基幸存者】";
+                localStorage.setItem('emo_res', status);
             }
-            
             if (state.user.toLowerCase() === "pluviophile") alert("I死了");
             showProfile();
         }
 
         function showProfile() {
             document.getElementById('p-name').innerText = state.user;
-            document.getElementById('p-mbti').innerText = localStorage.getItem('mbti_res') || "未测试";
+            document.getElementById('p-mbti').innerText = localStorage.getItem('mbti_res') || "未检测";
             document.getElementById('p-status').innerText = localStorage.getItem('emo_res') || "未鉴定";
             document.getElementById('p-time').innerText = localStorage.getItem('last_time') || "0s";
             switchSection('profile-section');
@@ -252,12 +255,12 @@
             window.scrollTo(0,0);
         }
 
-        function resetAll() { if(confirm("注销？")){localStorage.clear(); location.reload();} }
+        function resetAll() { if(confirm("格式化后一切归于虚无，确定？")){localStorage.clear(); location.reload();} }
 
         function showLeaderboard() {
             const list = document.getElementById('leaderboard-list');
             list.innerHTML = `<li><span>用户</span><span>人格</span><span>用时</span></li>`;
-            const d = [{n:"Pluviophile", m:"INFJ", t:"38s"}, {n:state.user, m:localStorage.getItem('mbti_res')||"?", t:localStorage.getItem('last_time')||"?"}];
+            const d = [{n:"Pluviophile", m:"INFJ", t:"42s"}, {n:state.user, m:localStorage.getItem('mbti_res')||"??", t:localStorage.getItem('last_time')||"0s"}];
             d.forEach(i => {
                 const li = document.createElement('li');
                 li.innerHTML = `<span>${i.n}</span><span>${i.m}</span><span>${i.t}</span>`;
@@ -265,9 +268,77 @@
             });
             switchSection('leaderboard-section');
         }
+
+        // ==========================================
+        // --- 核心：数据流崩溃背景代码 ---
+        // ==========================================
+        const canvas = document.getElementById('crash-canvas');
+        const ctx = canvas.getContext('2d');
+
+        // 设置全屏
+        canvas.width = window.innerWidth;
+        canvas.height = window.innerHeight;
+
+        // 字符集：日文假名 + 拉丁字母 + 数字（矩阵风核心）
+        const characters = "アァカサタナハマヤャラワガザダバパイィキシチニヒミリヰギジヂビピウゥクスツヌフムユュルグズブヅプエェケセテネヘメレヱゲゼデベペオォコソトノホモヨョロヲゴゾドボポヴッン0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ";
+        const charArray = characters.split('');
+
+        // 核心配置
+        const fontSize = 16;
+        const columns = canvas.width / fontSize;
+        const drops = []; // 存储每一列数据流的当前Y坐标
+
+        // 初始化所有列都在顶部
+        for (let i = 0; i < columns; i++) {
+            drops[i] = 1;
+        }
+
+        // 绘制每一帧
+        function drawMatrix() {
+            // 关键：半透明背景，形成拖影特效，看起来像是在逐渐消失
+            ctx.fillStyle = 'rgba(13, 17, 23, 0.05)';
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+            // 设置文字颜色（经典赛博绿，如果你喜欢忧郁，可以用 #58a6ff）
+            ctx.fillStyle = '#0f0'; // 如果想要忧郁风，替换为 '#58a6ff'
+            ctx.font = fontSize + 'px monospace';
+
+            // 循环绘制每一列
+            for (let i = 0; i < drops.length; i++) {
+                // 随机选取一个字符
+                const text = charArray[Math.floor(Math.random() * charArray.length)];
+                
+                // 绘制字符
+                ctx.fillText(text, i * fontSize, drops[i] * fontSize);
+
+                // 让数据流向下掉落。
+                // 随机性：如果数据流到了底部，且满足一定概率，或者直接到底了，就回到顶部重新下掉
+                if (drops[i] * fontSize > canvas.height && Math.random() > 0.975) {
+                    drops[i] = 0;
+                }
+
+                // 正常下落
+                drops[i]++;
+            }
+        }
+
+        // 动画循环
+        setInterval(drawMatrix, 35); // 约28.5帧/秒，既有流动感又不太刺眼
+
+        // 窗口大小调整时适配 Canvas
+        window.addEventListener('resize', () => {
+            canvas.width = window.innerWidth;
+            canvas.height = window.innerHeight;
+            const columns = canvas.width / fontSize;
+            // 重新初始化 drops
+            for (let i = 0; i < columns; i++) {
+                if (drops[i] === undefined) drops[i] = 1;
+            }
+        });
     </script>
 </body>
 </html>
+
 
 
 
